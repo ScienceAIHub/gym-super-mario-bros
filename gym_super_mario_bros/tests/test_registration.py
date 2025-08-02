@@ -34,7 +34,10 @@ class ShouldMakeEnv:
         else:
             env = make(env_id)
         env.reset(seed=self.seed)
-        s, r, d, i = env.step(0)
+        # Updated for gym 0.26+ API: step returns 5-tuple
+        s, r, terminated, truncated, i = env.step(0)
+        # done is now terminated OR truncated
+        d = terminated or truncated
         self.assertEqual(self.coins, i['coins'])
         self.assertEqual(self.flag_get, i['flag_get'])
         self.assertEqual(self.life, i['life'])

@@ -1,10 +1,51 @@
 """An OpenAI Gym environment for Super Mario Bros. and Lost Levels."""
 from collections import defaultdict
-from nes_py import NESEnv
+import warnings
 import numpy as np
+
+# Fix for numpy 2.x compatibility: add missing numpy.bool8 alias for gym 0.26.2
+if not hasattr(np, 'bool8'):
+    np.bool8 = np.bool_
+
+# Fix for numpy 2.x compatibility: patch nes_py ROM loading to handle uint8 overflow
+def _patch_nes_py_rom_compatibility():
+    """Patch nes_py ROM loading to handle numpy 2.x uint8 overflow issues."""
+    try:
+        import nes_py._rom as rom_module
+        ROM = rom_module.ROM
+        
+        # Store original properties
+        original_prg_rom_stop = ROM.prg_rom_stop.fget
+        original_chr_rom_stop = ROM.chr_rom_stop.fget
+        
+        def safe_prg_rom_stop(self):
+            """Safe version of prg_rom_stop that handles uint8 overflow."""
+            try:
+                return original_prg_rom_stop(self)
+            except (OverflowError, ValueError):
+                return int(self.prg_rom_start) + int(self.prg_rom_size) * 1024
+        
+        def safe_chr_rom_stop(self):
+            """Safe version of chr_rom_stop that handles uint8 overflow."""
+            try:
+                return original_chr_rom_stop(self)
+            except (OverflowError, ValueError):
+                return int(self.chr_rom_start) + int(self.chr_rom_size) * 1024
+        
+        # Apply patches
+        ROM.prg_rom_stop = property(safe_prg_rom_stop)
+        ROM.chr_rom_stop = property(safe_chr_rom_stop)
+        
+    except Exception:
+        # If patching fails, continue anyway
+        pass
+
+# Apply the patch before importing NESEnv
+_patch_nes_py_rom_compatibility()
+
+from nes_py import NESEnv
 from ._roms import decode_target
 from ._roms import rom_path
-
 
 # create a dictionary mapping value of status register to string names
 _STATUS_MAP = defaultdict(lambda: 'fireball', {0:'small', 1: 'tall'})
@@ -139,15 +180,19 @@ class SuperMarioBrosEnv(NESEnv):
     def _x_position(self):
         """Return the current horizontal position."""
         # add the current page 0x6d to the current x
-        return self.ram[0x6d] * 0x100 + self.ram[0x86]
+        # Fixed: use int conversion to prevent uint8 overflow with numpy 2.x
+        return int(self.ram[0x6d]) * 0x100 + int(self.ram[0x86])
 
     @property
     def _left_x_position(self):
         """Return the number of pixels from the left of the screen."""
-        # TODO: resolve RuntimeWarning: overflow encountered in ubyte_scalars
+        # Fixed: resolve RuntimeWarning: overflow encountered in ubyte_scalars
         # subtract the left x position 0x071c from the current x 0x86
-        # return (self.ram[0x86] - self.ram[0x071c]) % 256
-        return np.uint8(int(self.ram[0x86]) - int(self.ram[0x071c])) % 256
+        # Use safe conversion to avoid numpy overflow errors with newer versions
+        val1 = int(self.ram[0x86])
+        val2 = int(self.ram[0x071c])
+        diff = (val1 - val2) % 256
+        return np.uint8(diff)
 
     @property
     def _y_pixel(self):
@@ -416,6 +461,34 @@ class SuperMarioBrosEnv(NESEnv):
             x_pos=self._x_position,
             y_pos=self._y_position,
         )
+    
+    def step(self, action):
+        """
+        Run one frame of the NES and return the relevant observation data.
+        
+        This method overrides the parent to provide gym 0.26+ compatibility
+        by returning a 5-tuple instead of the legacy 4-tuple format.
+        
+        Args:
+            action (byte): the bitmap determining which buttons to press
+            
+        Returns:
+            a tuple of:
+            - observation (np.ndarray): next frame as a result of the given action
+            - reward (float): amount of reward returned after given action
+            - terminated (bool): whether the episode has ended due to environment termination
+            - truncated (bool): whether the episode was truncated by a time limit or similar
+            - info (dict): contains auxiliary diagnostic information
+        """
+        # Call parent step method which returns 4-tuple
+        observation, reward, done, info = super().step(action)
+        
+        # For our environment, done means terminated (game over, flag reached, etc.)
+        # We don't have truncation scenarios in the base environment
+        terminated = done
+        truncated = False
+        
+        return observation, reward, terminated, truncated, info
 
 
 # explicitly define the outward facing API of this module

@@ -127,9 +127,10 @@ class SuperMarioBrosRandomStagesEnv(gym.Env):
 
         Returns:
             a tuple of:
-            - state (np.ndarray): next frame as a result of the given action
-            - reward (float) : amount of reward returned after given action
-            - done (boolean): whether the episode has ended
+            - observation (np.ndarray): next frame as a result of the given action
+            - reward (float): amount of reward returned after given action
+            - terminated (bool): whether the episode has ended due to environment termination
+            - truncated (bool): whether the episode was truncated by a time limit or similar
             - info (dict): contains auxiliary diagnostic information
 
         """
