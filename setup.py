@@ -29,10 +29,8 @@ setup(
         'Operating System :: POSIX :: Linux',
         'Operating System :: Microsoft :: Windows',
         'Programming Language :: Python :: 3 :: Only',
-        'Programming Language :: Python :: 3.5',
-        'Programming Language :: Python :: 3.6',
-        'Programming Language :: Python :: 3.7',
-        'Programming Language :: Python :: 3.8',
+        'Programming Language :: Python :: 3.11',
+        'Programming Language :: Python :: 3.12',
         'Topic :: Games/Entertainment :: Side-Scrolling/Arcade Games',
         'Topic :: Scientific/Engineering :: Artificial Intelligence',
     ],
@@ -42,6 +40,7 @@ setup(
     license='Proprietary',
     packages=find_packages(exclude=['tests', '*.tests', '*.tests.*']),
     package_data={ 'gym_super_mario_bros': ['_roms/*.nes'] },
+    python_requires='>=3.11',
     install_requires=['nes-py>=8.1.4'],
     entry_points={
         'console_scripts': [
