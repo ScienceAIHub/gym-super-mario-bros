@@ -41,7 +41,7 @@ setup(
     packages=find_packages(exclude=['tests', '*.tests', '*.tests.*']),
     package_data={ 'gym_super_mario_bros': ['_roms/*.nes'] },
     python_requires='>=3.11',
-    install_requires=['nes-py>=8.1.4'],
+    install_requires=['nes-py>=8.1.4,<9.0.0'],
     entry_points={
         'console_scripts': [
             'gym_super_mario_bros = gym_super_mario_bros._app.cli:main',

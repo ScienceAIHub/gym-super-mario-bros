@@ -34,7 +34,7 @@ classifiers = [
     "Topic :: Scientific/Engineering :: Artificial Intelligence",
 ]
 dependencies = [
-    "nes-py>=8.1.4"
+    "nes-py>=8.1.4,<9.0.0"
 ]
 
 [project.urls]
