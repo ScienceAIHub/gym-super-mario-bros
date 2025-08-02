@@ -89,14 +89,13 @@ jobs:
         name: cibw-sdist
         path: dist/*.tar.gz
 
-  upload_pypi:
-    name: Upload to PyPI
+  upload_github_release:
+    name: Upload to GitHub Release
     needs: [test, build_wheels, build_sdist]  # Include test dependency
     runs-on: ubuntu-latest
     if: github.event_name == 'release' && github.event.action == 'published'
-    environment: pypi
     permissions:
-      id-token: write  # IMPORTANT: this permission is mandatory for trusted publishing
+      contents: write  # For uploading release assets
     steps:
     - uses: actions/download-artifact@v3
       with:
@@ -113,5 +112,38 @@ jobs:
         name: cibw-sdist
         path: dist
 
-    - name: Publish to PyPI
-      uses: pypa/gh-action-pypi-publish@release/v1
+    - name: Display structure of downloaded files
+      run: find dist -type f -name "*.whl" -o -name "*.tar.gz"
+
+    - name: Upload wheels to GitHub Release
+      uses: softprops/action-gh-release@v1
+      with:
+        files: |
+          dist/*.whl
+          dist/*.tar.gz
+        tag_name: ${{ github.ref_name }}
+        name: Release ${{ github.ref_name }}
+        body: |
+          ## 🚀 Release ${{ github.ref_name }}
+          
+          ### 📦 Distribution Files
+          This release includes wheel packages for:
+          - **Linux**: Python 3.11, 3.12 (x86_64)
+          - **Windows**: Python 3.11, 3.12 (AMD64)
+          - **Source**: Source distribution (.tar.gz)
+          
+          ### 🔧 Installation
+          Download the appropriate wheel for your platform and Python version:
+          ```bash
+          pip install <downloaded-wheel-file>
+          ```
+          
+          Or install from source:
+          ```bash
+          pip install <source-distribution-file>
+          ```
+          
+          ### ✅ Quality Assurance
+          All packages have been tested on their respective platforms with Python 3.11 and 3.12.
+        draft: false
+        prerelease: false

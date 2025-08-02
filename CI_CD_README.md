@@ -27,13 +27,13 @@ The pipeline runs tests and builds wheels for:
   1. **Test Job**: Runs pytest with coverage on all OS/Python combinations
   2. **Build Wheels Job**: Uses `cibuildwheel` for robust wheel building  
   3. **Build Source Job**: Creates source distribution tarball
-  4. **Publish Job**: Publishes all artifacts to PyPI on releases
+  4. **Upload Job**: Uploads all artifacts to GitHub Release (not PyPI)
 - **Features**:
   - Comprehensive test coverage with Codecov integration
   - Cross-platform wheel building with `cibuildwheel`
   - Tests package installation during wheel building
   - Fail-fast: stops on first test failure
-  - Automatic PyPI publishing on GitHub releases
+  - Automatic GitHub Release publishing with formatted release notes
 
 ### Test Coverage
 
@@ -55,21 +55,41 @@ Built wheels are uploaded as GitHub Actions artifacts and can be downloaded from
 - **🟢 All Tests Pass**: Pipeline proceeds to build wheels and artifacts
 - **🔴 Any Test Fails**: Pipeline stops immediately, no wheels are built
 - **⚠️ Build Fails**: Tests passed but wheel building failed (likely dependency issue)
-- **📦 Release**: On GitHub releases, wheels are automatically published to PyPI
+- **📦 Release**: On GitHub releases, wheels are automatically uploaded to the release assets
 
-### PyPI Publishing
+### GitHub Release Publishing
 
-For automatic PyPI publishing on releases:
+When you create a GitHub release, the pipeline will:
 
-1. **Set up PyPI trusted publishing** (recommended):
-   - Go to repository Settings → Environments
-   - Create environment named `pypi`
-   - Configure the PyPI trusted publisher for this repository
+1. **Download** all built artifacts (wheels and source distribution)
+2. **Upload** them as release assets to the GitHub release
+3. **Generate** formatted release notes with:
+   - List of included distribution files
+   - Installation instructions
+   - Platform compatibility information
+   - Quality assurance notes
 
-2. **Alternative: Use API token**:
-   - Create a PyPI API token
-   - Add it as repository secret `PYPI_API_TOKEN`
-   - Uncomment the token-based authentication in the workflow
+### Manual Installation from Releases
+
+Users can install your package by:
+1. Going to the [Releases page](https://github.com/ScienceAIHub/gym-super-mario-bros/releases)
+2. Downloading the appropriate wheel for their platform/Python version
+3. Installing with: `pip install <downloaded-wheel-file>`
+
+### GitHub Release Setup
+
+To publish packages with this pipeline:
+
+1. **Create a GitHub Release**:
+   - Go to repository → Releases → Create a new release
+   - Choose a tag version (e.g., `v7.4.1`)
+   - Add release title and description
+   - Publish the release
+
+2. **Automatic Upload**: The pipeline will automatically:
+   - Build and test all wheels
+   - Upload them as release assets
+   - Generate professional release notes
 
 ### Manual Builds
 
