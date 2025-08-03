@@ -55,7 +55,7 @@ write_to = "gym_super_mario_bros/_version.py"
 
 [tool.cibuildwheel]
 build = "cp311-* cp312-*"
-skip = "*-win32 *-manylinux_i686"
+skip = "*-win32 *-manylinux_i686 *-musllinux*"
 test-command = "python -c \"import gym_super_mario_bros; print('Package imported successfully')\""
 test-requires = ["pytest"]
 before-build = "pip install setuptools>=77.0.0 packaging>=24.2"
