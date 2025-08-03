@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=45", "wheel", "setuptools_scm[toml]>=6.2"]
+requires = ["setuptools>=77.0.0", "wheel", "setuptools_scm[toml]>=6.2", "packaging>=24.2"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -8,7 +8,7 @@ dynamic = ["version"]
 description = "Super Mario Bros. for OpenAI Gym"
 readme = "README.md"
 requires-python = ">=3.11"
-license = {text = "Proprietary"}
+license = "LicenseRef-Proprietary"
 authors = [
     {name = "Christian Kauten", email = "kautencreations@gmail.com"}
 ]
@@ -23,7 +23,6 @@ classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Developers",
     "Intended Audience :: Science/Research",
-    "License :: Free For Educational Use",
     "Operating System :: MacOS :: MacOS X",
     "Operating System :: POSIX :: Linux",
     "Operating System :: Microsoft :: Windows",
@@ -45,7 +44,7 @@ Repository = "https://github.com/Kautenja/gym-super-mario-bros"
 gym_super_mario_bros = "gym_super_mario_bros._app.cli:main"
 
 [tool.setuptools]
-packages = ["gym_super_mario_bros"]
+packages = ["gym_super_mario_bros", "gym_super_mario_bros._app", "gym_super_mario_bros._roms"]
 include-package-data = true
 
 [tool.setuptools.package-data]
@@ -59,7 +58,7 @@ build = "cp311-* cp312-*"
 skip = "*-win32 *-manylinux_i686"
 test-command = "python -c \"import gym_super_mario_bros; print('Package imported successfully')\""
 test-requires = ["pytest"]
-before-build = "pip install -r requirements.txt"
+before-build = "pip install setuptools>=77.0.0 packaging>=24.2"
 
 [tool.cibuildwheel.windows]
 archs = ["AMD64"]
