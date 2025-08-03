@@ -33,7 +33,8 @@ class ShouldMakeEnv:
             env = make(env_id, stages=stages)
         else:
             env = make(env_id)
-        env.reset(seed=self.seed)
+        # Updated for gym 0.26+ API: reset returns (obs, info) tuple
+        obs, info = env.reset(seed=self.seed)
         # Updated for gym 0.26+ API: step returns 5-tuple
         s, r, terminated, truncated, i = env.step(0)
         # done is now terminated OR truncated

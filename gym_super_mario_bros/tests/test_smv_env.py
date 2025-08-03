@@ -57,7 +57,8 @@ class ShouldStepGameEnv(TestCase):
         self.assertIsNone(env.unwrapped._target_world)
         self.assertIsNone(env.unwrapped._target_stage)
         self.assertIsNone(env.unwrapped._target_area)
-        env.reset()
+        # Updated for gym 0.26+ API: reset returns (obs, info) tuple
+        obs, info = env.reset()
         # Updated for gym 0.26+ API: step returns 5-tuple  
         s, r, terminated, truncated, i = env.step(0)
         self.assertEqual(0, i['coins'])
@@ -78,7 +79,8 @@ class ShouldStepStageEnv(TestCase):
         self.assertIsInstance(env.unwrapped._target_world, int)
         self.assertIsInstance(env.unwrapped._target_stage, int)
         self.assertIsInstance(env.unwrapped._target_area, int)
-        env.reset()
+        # Updated for gym 0.26+ API: reset returns (obs, info) tuple
+        obs, info = env.reset()
         # Updated for gym 0.26+ API: step returns 5-tuple
         s, r, terminated, truncated, i = env.step(0)
         self.assertEqual(0, i['coins'])

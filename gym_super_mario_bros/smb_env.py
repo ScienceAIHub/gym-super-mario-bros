@@ -219,9 +219,10 @@ class SuperMarioBrosEnv(NESEnv):
         # check if Mario is above the viewport (the score board area)
         if self._y_viewport < 1:
             # y position overflows so we start from 255 and add the offset
-            return 255 + (255 - self._y_pixel)
+            # Fixed: use int conversion to prevent uint8 overflow with numpy 2.x
+            return 255 + (255 - int(self._y_pixel))
         # invert the y pixel into the distance from the bottom of the screen
-        return 255 - self._y_pixel
+        return 255 - int(self._y_pixel)
 
     @property
     def _player_status(self):
@@ -489,6 +490,30 @@ class SuperMarioBrosEnv(NESEnv):
         truncated = False
         
         return observation, reward, terminated, truncated, info
+    
+    def reset(self, seed=None, options=None):
+        """
+        Reset the environment and return initial observation with info.
+        
+        This method overrides the parent to provide gym 0.26+ compatibility
+        by returning a tuple (observation, info) instead of just observation.
+        
+        Args:
+            seed (int, optional): Seed for random number generator
+            options (dict, optional): Additional options (unused)
+            
+        Returns:
+            tuple: (observation, info) where:
+            - observation (np.ndarray): initial frame after reset
+            - info (dict): contains auxiliary diagnostic information
+        """
+        # Call parent reset method which returns just observation
+        observation = super().reset()
+        
+        # Get initial info state
+        info = self._get_info()
+        
+        return observation, info
 
 
 # explicitly define the outward facing API of this module
