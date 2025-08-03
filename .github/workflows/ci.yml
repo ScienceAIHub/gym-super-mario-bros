@@ -48,12 +48,9 @@ jobs:
         name: codecov-umbrella
 
   build_wheels:
-    name: Build wheels on ${{ matrix.os }}
-    runs-on: ${{ matrix.os }}
+    name: Build wheels
+    runs-on: ubuntu-22.04  # Use single runner for universal wheels
     needs: test  # Only run if tests pass
-    strategy:
-      matrix:
-        os: [ubuntu-22.04, windows-2022]
 
     steps:
     - uses: actions/checkout@v4
@@ -63,22 +60,28 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v4
       with:
-        python-version: '3.12'  # Use latest supported version for build process
+        python-version: '3.12'
 
     - name: Install build dependencies
       run: |
         python -m pip install --upgrade pip
         pip install build setuptools wheel setuptools-scm packaging
 
-    - name: Build wheels
-      uses: pypa/cibuildwheel@v2.21.0
-      env:
-        CIBW_BUILD_VERBOSITY: 1
-        CIBW_BEFORE_BUILD: "pip install setuptools>=77.0.0 packaging>=24.2"
+    - name: Build universal wheel
+      run: |
+        python -m build --wheel
+        # Since this is a pure Python package, create universal wheel
+        pip install wheel
+        python setup.py bdist_wheel --universal || python -m build --wheel
+
+    - name: Create wheelhouse directory
+      run: |
+        mkdir -p wheelhouse
+        cp dist/*.whl wheelhouse/
 
     - uses: actions/upload-artifact@v4
       with:
-        name: cibw-wheels-${{ matrix.os }}
+        name: wheels
         path: ./wheelhouse/*.whl
 
   build_sdist:
@@ -108,12 +111,7 @@ jobs:
     steps:
     - uses: actions/download-artifact@v4
       with:
-        name: cibw-wheels-ubuntu-22.04
-        path: dist
-
-    - uses: actions/download-artifact@v4
-      with:
-        name: cibw-wheels-windows-2022
+        name: wheels
         path: dist
 
     - uses: actions/download-artifact@v4
@@ -137,8 +135,7 @@ jobs:
           
           ### 📦 Distribution Files
           This release includes wheel packages for:
-          - **Linux**: Python 3.11, 3.12 (x86_64)
-          - **Windows**: Python 3.11, 3.12 (AMD64)
+          - **Universal**: Python 3.11+ (all platforms)
           - **Source**: Source distribution (.tar.gz)
           
           ### 🔧 Installation
@@ -153,6 +150,6 @@ jobs:
           ```
           
           ### ✅ Quality Assurance
-          All packages have been tested on their respective platforms with Python 3.11 and 3.12.
+          All packages have been tested on Linux and Windows with Python 3.11 and 3.12.
         draft: false
         prerelease: false
